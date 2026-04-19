@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Features/home/presentation/pages/home_page.dart';
+import 'package:toko_oli/Features/home/presentation/pages/dashboard_page.dart';
 
 void main() {
   runApp(const TokoOliApp());
@@ -24,7 +24,7 @@ class TokoOliApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const DashboardPage(),
     );
   }
 }
