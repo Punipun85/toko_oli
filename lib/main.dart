@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:toko_oli/Features/home/presentation/pages/dashboard_page.dart';
+import 'package:toko_oli/app/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://cyuepjhmvrtyhsidfvhm.supabase.co',
+    anonKey: 'sb_publishable_bzjyyYlRGZyhMym9ooKvmg_yiOPE2yc',
+  );
+
   runApp(const TokoOliApp());
 }
 
@@ -11,21 +20,10 @@ class TokoOliApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aplikasi Toko Oli',
+      title: 'Flutter Oil Store',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          centerTitle: false, 
-        ),
-        useMaterial3: true,
-      ),
+      theme: buildTokoOliTheme(),
       home: const DashboardPage(),
     );
   }
 }
-
