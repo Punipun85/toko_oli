@@ -1,0 +1,10 @@
+project_id = "toko_oli"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
