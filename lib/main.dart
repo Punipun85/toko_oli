@@ -11,11 +11,11 @@ Future<void> main() async {
     anonKey: 'sb_publishable_bzjyyYlRGZyhMym9ooKvmg_yiOPE2yc',
   );
 
-  runApp(const TokoOliApp());
+  runApp(const MyApp());
 }
 
-class TokoOliApp extends StatelessWidget {
-  const TokoOliApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
