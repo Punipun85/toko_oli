@@ -32,15 +32,32 @@ class ProductDetailPage extends StatelessWidget {
               ),
               border: Border.all(color: const Color(0xFF5A4136)),
             ),
-            child: Center(
-              child: Text(
-                '${product.sae}\n${product.volume}',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: const Color(0xFFFFB693),
-                ),
-              ),
-            ),
+            child: product.imageUrl == null || product.imageUrl!.isEmpty
+                ? Center(
+                    child: Text(
+                      '${product.sae}\n${product.volume}',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: const Color(0xFFFFB693),
+                      ),
+                    ),
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    child: Image.network(
+                      product.imageUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Text(
+                          '${product.sae}\n${product.volume}',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: const Color(0xFFFFB693),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
           ),
           const SizedBox(height: 20),
           Row(
@@ -68,10 +85,7 @@ class ProductDetailPage extends StatelessWidget {
           const SizedBox(height: 14),
           Text(product.name, style: theme.textTheme.headlineSmall),
           const SizedBox(height: 8),
-          Text(
-            'Pelumas premium untuk menjaga stabilitas suhu, respons mesin, dan umur komponen pada pemakaian harian maupun performa tinggi.',
-            style: theme.textTheme.bodyLarge,
-          ),
+          Text(product.description, style: theme.textTheme.bodyLarge),
           const SizedBox(height: 18),
           Text(
             product.price,
@@ -86,8 +100,9 @@ class ProductDetailPage extends StatelessWidget {
             rows: [
               ('Tingkat kekentalan', product.sae),
               ('Volume', product.volume),
-              ('Kategori', 'Oli & pelumas'),
-              ('Kondisi', 'Baru dan tersegel'),
+              ('Seri', product.series),
+              ('Kategori', product.category),
+              ('Tipe', product.type),
             ],
           ),
           const SizedBox(height: 20),

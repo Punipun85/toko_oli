@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:toko_oli/Features/model/product_model.dart';
+import 'package:toko_oli/Features/product/data/product_repository.dart';
 import 'package:toko_oli/Features/product/presentation/pages/product_detail_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,31 +11,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ProductRepository _productRepository = ProductRepository();
   late Future<List<Product>> futureProducts;
 
   @override
   void initState() {
     super.initState();
-    futureProducts = fetchProducts();
-  }
-
-  Future<List<Product>> fetchProducts() async {
-    final url = Uri.parse('http://127.0.0.1:8080/Toko_Oli/get_produk.php');
-
-    try {
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonResponse = json.decode(response.body) as List<dynamic>;
-        return jsonResponse
-            .map((data) => Product.fromJson(data as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (_) {
-      // Fall back to sample data so the Stitch-aligned screens remain usable.
-    }
-
-    return Product.sampleData;
+    futureProducts = _productRepository.fetchProducts();
   }
 
   @override
@@ -75,7 +55,7 @@ class _HomePageState extends State<HomePage> {
       body: FutureBuilder<List<Product>>(
         future: futureProducts,
         builder: (context, snapshot) {
-          final products = snapshot.data ?? Product.sampleData;
+          final products = snapshot.data ?? const <Product>[];
 
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -88,6 +68,16 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 20),
               _HeroPromoCard(productCount: products.length),
+              if (snapshot.hasError) ...[
+                const SizedBox(height: 16),
+                _ErrorCard(
+                  onRetry: () {
+                    setState(() {
+                      futureProducts = _productRepository.fetchProducts();
+                    });
+                  },
+                ),
+              ],
               const SizedBox(height: 24),
               Text('Vehicle Selector', style: theme.textTheme.titleLarge),
               const SizedBox(height: 12),
@@ -138,6 +128,10 @@ class _HomePageState extends State<HomePage> {
                 height: 260,
                 child: snapshot.connectionState == ConnectionState.waiting
                     ? const Center(child: CircularProgressIndicator())
+                    : products.isEmpty
+                        ? const Center(
+                            child: Text('Belum ada produk yang tersedia di database.'),
+                          )
                     : ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: products.length,
@@ -277,7 +271,7 @@ class _ProductHighlightCard extends StatelessWidget {
           MaterialPageRoute(builder: (_) => ProductDetailPage(product: product)),
         );
       },
-      child: Container(
+        child: Container(
         width: 200,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -304,16 +298,34 @@ class _ProductHighlightCard extends StatelessWidget {
                   colors: [Color(0xFF313539), Color(0xFF181C20)],
                 ),
               ),
-              child: Center(
-                child: Text(
-                  '${product.sae}\n${product.volume}',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: const Color(0xFFFFB693),
-                        fontWeight: FontWeight.w800,
+              child: product.imageUrl == null || product.imageUrl!.isEmpty
+                  ? Center(
+                      child: Text(
+                        '${product.sae}\n${product.volume}',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: const Color(0xFFFFB693),
+                              fontWeight: FontWeight.w800,
+                            ),
                       ),
-                ),
-              ),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.network(
+                        product.imageUrl!,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Center(
+                          child: Text(
+                            '${product.sae}\n${product.volume}',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: const Color(0xFFFFB693),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
+                      ),
+                    ),
             ),
             const SizedBox(height: 14),
             Text(
@@ -359,6 +371,43 @@ class _ProductHighlightCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2B1E1E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFFF6B00)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Koneksi Supabase gagal dibaca.',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Coba muat ulang data untuk mengambil katalog terbaru dari database.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: onRetry,
+            child: const Text('Coba lagi'),
+          ),
+        ],
       ),
     );
   }
