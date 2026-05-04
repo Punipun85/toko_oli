@@ -25,12 +25,12 @@ class CatalogPage extends ConsumerWidget {
     final isTablet = screenWidth >= 560 && screenWidth < 960;
     final horizontalPadding = isPhone ? 12.0 : 16.0;
     final crossAxisCount = isPhone ? 1 : isTablet ? 2 : 3;
-    final childAspectRatio = isPhone
-        ? 1.52
-        : isTablet
-        ? 0.86
-        : 1.02;
     final gridSpacing = isPhone ? 12.0 : 14.0;
+    final gridItemExtent = isPhone
+        ? 356.0
+        : isTablet
+        ? 348.0
+        : 334.0;
 
     return Scaffold(
       body: RefreshIndicator.adaptive(
@@ -148,7 +148,7 @@ class CatalogPage extends ConsumerWidget {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: gridSpacing,
                     mainAxisSpacing: gridSpacing,
-                    childAspectRatio: childAspectRatio,
+                    mainAxisExtent: gridItemExtent,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
