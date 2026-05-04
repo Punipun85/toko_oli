@@ -29,8 +29,9 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final imageHeight = _isFeatured ? 132.0 : 118.0;
+    final imageHeight = _isFeatured ? 132.0 : 104.0;
     final imageAspectRatio = _isFeatured ? null : null;
+    final cardPadding = _isFeatured ? 14.0 : 12.0;
 
     return Material(
       color: Colors.transparent,
@@ -38,7 +39,7 @@ class ProductCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         onTap: onTap,
         child: Ink(
-          padding: const EdgeInsets.all(14),
+          padding: EdgeInsets.all(cardPadding),
           decoration: BoxDecoration(
             color: const Color(0xFF1C2024),
             borderRadius: BorderRadius.circular(22),
@@ -61,7 +62,7 @@ class ProductCard extends StatelessWidget {
                 height: imageHeight,
                 aspectRatio: imageAspectRatio,
               ),
-              SizedBox(height: _isFeatured ? 12 : 14),
+              SizedBox(height: _isFeatured ? 12 : 12),
               Text(
                 product.brand.toUpperCase(),
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -69,14 +70,14 @@ class ProductCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 product.name,
-                maxLines: 2,
+                maxLines: _isFeatured ? 2 : 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -86,7 +87,7 @@ class ProductCard extends StatelessWidget {
                   if (product.series != '-') _SpecPill(label: product.series),
                 ],
               ),
-              SizedBox(height: _isFeatured ? 12 : 10),
+              SizedBox(height: _isFeatured ? 12 : 8),
               if (_isFeatured) const Spacer(),
               Text(
                 product.hasPrice ? 'Harga mulai' : 'Status harga',
@@ -129,11 +130,15 @@ class ProductCard extends StatelessWidget {
                 ),
               ],
               if (!_isFeatured && primaryActionLabel != null) ...[
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: onPrimaryAction ?? onTap,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     child: Text(primaryActionLabel!),
                   ),
                 ),

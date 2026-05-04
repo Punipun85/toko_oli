@@ -21,19 +21,19 @@ class CatalogPage extends ConsumerWidget {
     final asyncProducts = ref.watch(productsProvider);
     final products = asyncProducts.valueOrNull ?? const <Product>[];
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final isCompactMobile = screenWidth < 430;
-    final isMobile = screenWidth < 700;
-    final horizontalPadding = isCompactMobile ? 12.0 : 16.0;
-    final crossAxisCount = isCompactMobile ? 1 : isMobile ? 2 : 3;
-    final childAspectRatio = isCompactMobile
-        ? 1.58
-        : isMobile
-        ? 0.84
+    final isPhone = screenWidth < 560;
+    final isTablet = screenWidth >= 560 && screenWidth < 960;
+    final horizontalPadding = isPhone ? 12.0 : 16.0;
+    final crossAxisCount = isPhone ? 1 : isTablet ? 2 : 3;
+    final childAspectRatio = isPhone
+        ? 1.52
+        : isTablet
+        ? 0.86
         : 1.02;
-    final gridSpacing = isCompactMobile ? 12.0 : 14.0;
+    final gridSpacing = isPhone ? 12.0 : 14.0;
 
     return Scaffold(
-      body: RefreshIndicator(
+      body: RefreshIndicator.adaptive(
         onRefresh: () => _refreshProducts(ref),
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
