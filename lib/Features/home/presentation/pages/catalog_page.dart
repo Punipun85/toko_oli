@@ -1,44 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:toko_oli/Features/model/product_model.dart';
-import 'package:toko_oli/Features/product/data/product_repository.dart';
-import 'package:toko_oli/Features/product/presentation/pages/product_detail_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:toko_oli/features/product/domain/product.dart';
+import 'package:toko_oli/features/home/presentation/widgets/produk_card.dart';
+import 'package:toko_oli/features/product/presentation/pages/product_detail_page.dart';
+import 'package:toko_oli/features/product/presentation/providers/product_provider.dart';
+import 'package:toko_oli/features/cart/presentation/controllers/cart_controller.dart';
 
-class CatalogPage extends StatefulWidget {
+import 'package:toko_oli/features/cart/presentation/widgets/add_to_cart_bottom_sheet.dart';
+
+class CatalogPage extends ConsumerWidget {
   const CatalogPage({super.key});
 
-  @override
-  State<CatalogPage> createState() => _CatalogPageState();
-}
-
-class _CatalogPageState extends State<CatalogPage> {
-  final ProductRepository _productRepository = ProductRepository();
-  late Future<List<Product>> _futureProducts;
-
-  @override
-  void initState() {
-    super.initState();
-    _futureProducts = _productRepository.fetchProducts();
+  Future<void> _refreshProducts(WidgetRef ref) {
+    return ref.refresh(productsProvider.future);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final asyncProducts = ref.watch(productsProvider);
+    final products = asyncProducts.valueOrNull ?? const <Product>[];
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final childAspectRatio = screenWidth < 700 ? 0.82 : 1.08;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Katalog Produk'),
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.filter_list_rounded)),
-        ],
-      ),
-      body: FutureBuilder<List<Product>>(
-        future: _futureProducts,
-        builder: (context, snapshot) {
-          final products = snapshot.data ?? const <Product>[];
-
-          return Column(
-            children: [
-              Padding(
+      body: RefreshIndicator(
+        onRefresh: () => _refreshProducts(ref),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              title: const Text('Katalog Produk'),
+              floating: true,
+              snap: true,
+              actions: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.filter_list_rounded),
+                ),
+              ],
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: Row(
                   children: [
@@ -52,17 +55,25 @@ class _CatalogPageState extends State<CatalogPage> {
                     ),
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1C2024),
                         borderRadius: BorderRadius.circular(18),
                       ),
-                      child: const Icon(Icons.tune_rounded, color: Color(0xFFFFB693)),
+                      child: const Icon(
+                        Icons.tune_rounded,
+                        color: Color(0xFFFFB693),
+                      ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
                 height: 42,
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -80,127 +91,68 @@ class _CatalogPageState extends State<CatalogPage> {
                   ],
                 ),
               ),
-              if (snapshot.hasError)
-                Padding(
+            ),
+            if (asyncProducts.hasError)
+              SliverToBoxAdapter(
+                child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Gagal memuat produk dari Supabase.',
-                      style: theme.textTheme.bodyMedium?.copyWith(color: Colors.red[200]),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.red[200],
+                      ),
                     ),
                   ),
                 ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: snapshot.connectionState == ConnectionState.waiting
-                    ? const Center(child: CircularProgressIndicator())
-                    : products.isEmpty
-                        ? const Center(child: Text('Produk belum tersedia.'))
-                        : GridView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 14,
-                              mainAxisSpacing: 14,
-                              childAspectRatio: 0.7,
-                            ),
-                            itemCount: products.length,
-                            itemBuilder: (context, index) {
-                              final product = products[index];
-
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ProductDetailPage(product: product),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1C2024),
-                                    borderRadius: BorderRadius.circular(22),
-                                    border: Border.all(color: const Color(0xFF313539)),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      AspectRatio(
-                                        aspectRatio: 1,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(18),
-                                            gradient: const LinearGradient(
-                                              colors: [Color(0xFF313539), Color(0xFF181C20)],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                          ),
-                                          child: product.imageUrl == null || product.imageUrl!.isEmpty
-                                              ? Center(
-                                                  child: Text(
-                                                    '${product.sae}\n${product.volume}',
-                                                    textAlign: TextAlign.center,
-                                                    style: theme.textTheme.titleMedium?.copyWith(
-                                                      color: const Color(0xFFFFB693),
-                                                      fontWeight: FontWeight.w800,
-                                                    ),
-                                                  ),
-                                                )
-                                              : ClipRRect(
-                                                  borderRadius: BorderRadius.circular(18),
-                                                  child: Image.network(
-                                                    product.imageUrl!,
-                                                    fit: BoxFit.contain,
-                                                    errorBuilder: (_, __, ___) => Center(
-                                                      child: Text(
-                                                        '${product.sae}\n${product.volume}',
-                                                        textAlign: TextAlign.center,
-                                                        style: theme.textTheme.titleMedium?.copyWith(
-                                                          color: const Color(0xFFFFB693),
-                                                          fontWeight: FontWeight.w800,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        product.brand.toUpperCase(),
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: const Color(0xFFA98A7D),
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        product.name,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: theme.textTheme.titleMedium,
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                        product.price,
-                                        style: theme.textTheme.titleLarge?.copyWith(
-                                          color: const Color(0xFFFFB693),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
               ),
-            ],
-          );
-        },
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            if (asyncProducts.isLoading)
+              const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (products.isEmpty)
+              const SliverFillRemaining(
+                child: Center(child: Text('Produk belum tersedia.')),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: childAspectRatio,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final product = products[index];
+
+                      return ProductCard(
+                        product: product,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ProductDetailPage(product: product),
+                            ),
+                          );
+                        },
+                        primaryActionLabel: 'Tambah ke keranjang',
+                        onPrimaryAction: () {
+                          AddToCartBottomSheet.show(context, product);
+                        },
+                      );
+                    },
+                    childCount: products.length,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
