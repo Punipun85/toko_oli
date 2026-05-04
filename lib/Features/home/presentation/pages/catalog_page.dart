@@ -21,7 +21,16 @@ class CatalogPage extends ConsumerWidget {
     final asyncProducts = ref.watch(productsProvider);
     final products = asyncProducts.valueOrNull ?? const <Product>[];
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final childAspectRatio = screenWidth < 700 ? 0.82 : 1.08;
+    final isCompactMobile = screenWidth < 430;
+    final isMobile = screenWidth < 700;
+    final horizontalPadding = isCompactMobile ? 12.0 : 16.0;
+    final crossAxisCount = isCompactMobile ? 1 : isMobile ? 2 : 3;
+    final childAspectRatio = isCompactMobile
+        ? 1.58
+        : isMobile
+        ? 0.84
+        : 1.02;
+    final gridSpacing = isCompactMobile ? 12.0 : 14.0;
 
     return Scaffold(
       body: RefreshIndicator(
@@ -42,7 +51,12 @@ class CatalogPage extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  8,
+                  horizontalPadding,
+                  12,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -76,7 +90,7 @@ class CatalogPage extends ConsumerWidget {
               child: SizedBox(
                 height: 42,
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   scrollDirection: Axis.horizontal,
                   children: const [
                     Chip(label: Text('5W-30')),
@@ -95,7 +109,12 @@ class CatalogPage extends ConsumerWidget {
             if (asyncProducts.hasError)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    12,
+                    horizontalPadding,
+                    0,
+                  ),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -118,12 +137,17 @@ class CatalogPage extends ConsumerWidget {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  0,
+                  horizontalPadding,
+                  24,
+                ),
                 sliver: SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: gridSpacing,
+                    mainAxisSpacing: gridSpacing,
                     childAspectRatio: childAspectRatio,
                   ),
                   delegate: SliverChildBuilderDelegate(
