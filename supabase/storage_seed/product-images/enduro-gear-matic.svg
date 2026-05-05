@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2B2F35" />
+      <stop offset="100%" stop-color="#111417" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="640" rx="48" fill="url(#bg)" />
+  <rect x="40" y="40" width="560" height="560" rx="36" fill="none" stroke="#FF6B00" stroke-width="6" />
+  <text x="320" y="230" text-anchor="middle" fill="#FFB693" font-size="34" font-family="Arial, sans-serif" font-weight="700">PERTAMINA</text>
+  <text x="320" y="320" text-anchor="middle" fill="#F4F5F7" font-size="30" font-family="Arial, sans-serif" font-weight="700">Enduro Gear Matic</text>
+  <text x="320" y="392" text-anchor="middle" fill="#C3C8CE" font-size="22" font-family="Arial, sans-serif">Image placeholder stored in Supabase</text>
+</svg>

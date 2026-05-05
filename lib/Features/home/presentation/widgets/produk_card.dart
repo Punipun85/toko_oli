@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:toko_oli/core/theme/app_theme.dart';
 import 'package:toko_oli/features/product/domain/product.dart';
 
 enum ProductCardLayout { featured, grid }
@@ -29,30 +30,29 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final imageHeight = _isFeatured ? 132.0 : 104.0;
-    final imageAspectRatio = _isFeatured ? null : null;
+    final colors = context.appColors;
+    final imageHeight = _isFeatured ? 144.0 : 112.0;
+    final imageAspectRatio = null;
     final cardPadding = _isFeatured ? 14.0 : 12.0;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         onTap: onTap,
         child: Ink(
           padding: EdgeInsets.all(cardPadding),
           decoration: BoxDecoration(
-            color: const Color(0xFF1C2024),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFF313539)),
-            boxShadow: _isFeatured
-                ? const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 24,
-                      offset: Offset(0, 14),
-                    ),
-                  ]
-                : null,
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: colors.outline),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow,
+                blurRadius: _isFeatured ? 28 : 20,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +66,7 @@ class ProductCard extends StatelessWidget {
               Text(
                 product.brand.toUpperCase(),
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFFA98A7D),
+                  color: colors.mutedText,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -88,11 +88,11 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
               SizedBox(height: _isFeatured ? 12 : 8),
-              if (_isFeatured) const Spacer(),
+              const Spacer(),
               Text(
                 product.hasPrice ? 'Harga mulai' : 'Status harga',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFFA98A7D),
+                  color: colors.mutedText,
                 ),
               ),
               const SizedBox(height: 4),
@@ -101,7 +101,7 @@ class ProductCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: const Color(0xFFFFB693),
+                  color: colors.accent,
                 ),
               ),
               if (_isFeatured) ...[
@@ -111,7 +111,7 @@ class ProductCard extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: onTap,
-                        child: const Text('Detail'),
+                        child: const Text('Lihat detail'),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -120,8 +120,8 @@ class ProductCard extends StatelessWidget {
                       child: IconButton.filled(
                         onPressed: onPrimaryAction ?? onTap,
                         style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF6B00),
-                          foregroundColor: Colors.black,
+                          backgroundColor: colors.accent,
+                          foregroundColor: Colors.white,
                         ),
                         icon: Icon(primaryActionIcon),
                       ),
@@ -129,18 +129,33 @@ class ProductCard extends StatelessWidget {
                   ],
                 ),
               ],
-              if (!_isFeatured && primaryActionLabel != null) ...[
+              if (!_isFeatured) ...[
                 const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: onPrimaryAction ?? onTap,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: onTap,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Lihat detail'),
+                      ),
                     ),
-                    child: Text(primaryActionLabel!),
-                  ),
+                    const SizedBox(width: 8),
+                    Tooltip(
+                      message: primaryActionTooltip ?? 'Tambah ke keranjang',
+                      child: IconButton.filled(
+                        onPressed: onPrimaryAction ?? onTap,
+                        style: IconButton.styleFrom(
+                          backgroundColor: colors.accent,
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.shopping_cart_rounded),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ],
@@ -208,8 +223,11 @@ class ProductImagePanel extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF313539), Color(0xFF181C20)],
+        gradient: LinearGradient(
+          colors: [
+            context.appColors.surfaceMuted,
+            const Color(0xFFE6EEFF),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -233,6 +251,7 @@ class _ProductImageFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.appColors;
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxHeight < 132;
@@ -254,7 +273,7 @@ class _ProductImageFallback extends StatelessWidget {
                     vertical: compact ? 4 : 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black26,
+                    color: colors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -262,7 +281,7 @@ class _ProductImageFallback extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFFFFD3BF),
+                      color: colors.primary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -276,12 +295,12 @@ class _ProductImageFallback extends StatelessWidget {
                     width: iconBox,
                     height: iconBox,
                     decoration: BoxDecoration(
-                      color: const Color(0x14FFFFFF),
+                      color: Colors.white.withValues(alpha: 0.78),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(
                       Icons.local_gas_station_rounded,
-                      color: const Color(0xFFFFB693),
+                      color: colors.accent,
                       size: iconSize,
                     ),
                   ),
@@ -296,7 +315,7 @@ class _ProductImageFallback extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: const Color(0xFFFFD3BF),
+                            color: colors.primary,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -306,7 +325,7 @@ class _ProductImageFallback extends StatelessWidget {
                           maxLines: compact ? 1 : 2,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFFFFB693),
+                            color: colors.accent,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -330,17 +349,18 @@ class _SpecPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF262A2E),
+        color: colors.surfaceMuted,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFF3C4247)),
+        border: Border.all(color: colors.outline),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: const Color(0xFFE0E3E8),
+          color: colors.primary,
           fontWeight: FontWeight.w600,
         ),
       ),

@@ -3,7 +3,7 @@ class Product {
     required this.id,
     required this.name,
     required this.brand,
-    required this.price,
+    required this.priceValue,
     required this.sae,
     required this.volume,
     required this.type,
@@ -16,7 +16,7 @@ class Product {
   final String id;
   final String name;
   final String brand;
-  final String price;
+  final num priceValue;
   final String sae;
   final String volume;
   final String type;
@@ -24,6 +24,28 @@ class Product {
   final String category;
   final String description;
   final String? imageUrl;
+
+  String get price =>
+      hasPrice ? 'Rp ${_formatPrice(priceValue)}' : 'Harga belum tersedia';
+
+  bool get hasPrice => priceValue > 0;
+
+  String? get resolvedImageUrl {
+    final rawImage = imageUrl?.trim();
+    if (rawImage == null || rawImage.isEmpty) {
+      return null;
+    }
+
+    if (rawImage.startsWith('//')) {
+      return 'https:$rawImage';
+    }
+
+    if (rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+      return Uri.encodeFull(rawImage);
+    }
+
+    return null;
+  }
 
   factory Product.fromSupabase(Map<String, dynamic> json) {
     final merkData = json['merk'];
@@ -33,14 +55,23 @@ class Product {
     return Product(
       id: json['id_produk'].toString(),
       name: (json['nama_produk'] ?? '').toString(),
-      brand: _extractRelationValue(merkData, 'nama_merk', fallback: 'Pertamina'),
-      price: harga <= 0 ? 'Hubungi kami' : 'Rp ${harga.toInt()}',
+      brand: _extractRelationValue(
+        merkData,
+        'nama_merk',
+        fallback: 'Pertamina',
+      ),
+      priceValue: harga,
       sae: (json['sae'] ?? '-').toString(),
       volume: (json['volume'] ?? '-').toString(),
       type: (json['tipe'] ?? '-').toString(),
       series: (json['seri'] ?? '-').toString(),
-      category: _extractRelationValue(kategoriData, 'nama_kategori', fallback: 'Oli'),
-      description: (json['deskripsi'] ?? 'Detail produk belum tersedia.').toString(),
+      category: _extractRelationValue(
+        kategoriData,
+        'nama_kategori',
+        fallback: 'Oli',
+      ),
+      description: (json['deskripsi'] ?? 'Detail produk belum tersedia.')
+          .toString(),
       imageUrl: json['gambar']?.toString(),
     );
   }
@@ -54,7 +85,9 @@ class Product {
       return (relation[key] ?? fallback).toString();
     }
 
-    if (relation is List && relation.isNotEmpty && relation.first is Map<String, dynamic>) {
+    if (relation is List &&
+        relation.isNotEmpty &&
+        relation.first is Map<String, dynamic>) {
       return (relation.first[key] ?? fallback).toString();
     }
 
@@ -66,6 +99,23 @@ class Product {
       return rawPrice;
     }
 
-    return num.tryParse(rawPrice?.toString() ?? '') ?? 0;
+    final normalizedPrice = (rawPrice?.toString() ?? '')
+        .replaceAll(RegExp(r'[^0-9,.-]'), '')
+        .replaceAll('.', '')
+        .replaceAll(',', '.');
+
+    return num.tryParse(normalizedPrice) ?? 0;
+  }
+
+  static String _formatPrice(num value) {
+    final digits = value.round().toString();
+    final parts = <String>[];
+
+    for (var end = digits.length; end > 0; end -= 3) {
+      final start = end - 3 < 0 ? 0 : end - 3;
+      parts.insert(0, digits.substring(start, end));
+    }
+
+    return parts.join('.');
   }
 }
